@@ -56,6 +56,11 @@ def add_user():
     print(request)
 # --------------
 
+Position = Base.classes.smon_position
+class PositionSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Position
+
 # building
 p_ns = api.namespace('position', description='Position operations')
 position = api.model('Position', {
@@ -64,11 +69,6 @@ position = api.model('Position', {
     'floor' : fields.String(required=True, description=''),
     'room' : fields.String(required=False, description='')
 })
-
-Position = Base.classes.smon_position
-class PositionSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = Position
 
 @p_ns.route('/')
 class PositionList(Resource):
@@ -87,6 +87,31 @@ class PositionList(Resource):
         db.session.commit()
         return position, 201
 
+@p_ns.route('/<int:id>')
+@p_ns.response(404, 'Position not found')
+@p_ns.param('id', 'The position identifier')
+class PositionDetail(Resource):
+    @p_ns.marshal_with(position)
+    def get(self, id):
+        return PositionSchema().dump(db.session.query(Position).filter_by(id=id).first())
+
+    @p_ns.response(204, 'Position deleted')
+    def delete(self, id):
+        position = db.session.query(Position).filter_by(id=id).first()
+        db.session.delete(position)
+        db.session.commit()
+        return '', 204
+
+    @p_ns.expect(position)
+    @p_ns.marshal_with(position)
+    def put(self, id):
+        position = db.session.query(Position).filter_by(id=id).first()
+        position.building = api.payload['building']
+        position.floor = api.payload['floor']
+        position.room = api.payload['room']
+        db.session.commit()
+        return PositionSchema().dump(position)
+        
 #db.session.close()
 
 
