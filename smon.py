@@ -55,63 +55,7 @@ def get_user(id):
 def add_user():
     print(request)
 # --------------
-
-Position = Base.classes.smon_position
-class PositionSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = Position
-
-# building
-p_ns = api.namespace('position', description='Position operations')
-position = api.model('Position', {
-    'id': fields.Integer(readonly=True, description='The position unique identifier'),
-    'building' : fields.String(required=True, description=''),
-    'floor' : fields.String(required=True, description=''),
-    'room' : fields.String(required=False, description='')
-})
-
-@p_ns.route('/')
-class PositionList(Resource):
-    @p_ns.marshal_list_with(position)
-    def get(self):
-        return PositionSchema(many=True).dump(db.session.query(Position).all())
-
-    @p_ns.expect(position)
-    @p_ns.marshal_with(position, code=201)
-    def post(self):
-        position = Position()
-        position.building = api.payload['building']
-        position.floor = api.payload['floor']
-        position.room = api.payload['room']
-        db.session.add(position)
-        db.session.commit()
-        return position, 201
-
-@p_ns.route('/<int:id>')
-@p_ns.response(404, 'Position not found')
-@p_ns.param('id', 'The position identifier')
-class PositionDetail(Resource):
-    @p_ns.marshal_with(position)
-    def get(self, id):
-        return PositionSchema().dump(db.session.query(Position).filter_by(id=id).first())
-
-    @p_ns.response(204, 'Position deleted')
-    def delete(self, id):
-        position = db.session.query(Position).filter_by(id=id).first()
-        db.session.delete(position)
-        db.session.commit()
-        return '', 204
-
-    @p_ns.expect(position)
-    @p_ns.marshal_with(position)
-    def put(self, id):
-        position = db.session.query(Position).filter_by(id=id).first()
-        position.building = api.payload['building']
-        position.floor = api.payload['floor']
-        position.room = api.payload['room']
-        db.session.commit()
-        return PositionSchema().dump(position)
-        
+import module.position
 #db.session.close()
 
 
