@@ -7,6 +7,7 @@ from .assets import api as assets_api
 from .provider import api as provider_api
 from .order import api as order_api
 from .order_state import api as order_state_api
+from .nav import api as nav_api
 
 api = Api(title='API', version='1.0')
 
@@ -18,4 +19,5 @@ api.add_namespace(assets_api)
 api.add_namespace(provider_api)
 api.add_namespace(order_api)
 api.add_namespace(order_state_api)
+api.add_namespace(nav_api)
 
